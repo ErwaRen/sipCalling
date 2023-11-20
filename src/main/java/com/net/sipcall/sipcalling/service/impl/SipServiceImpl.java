@@ -7,6 +7,7 @@ import com.net.sipcall.sipcalling.dto.SIPDto;
 import com.net.sipcall.sipcalling.exception.JudgeBusyException;
 import com.net.sipcall.sipcalling.exception.UserNotInACallException;
 import com.net.sipcall.sipcalling.service.SipService;
+import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.peers.FileLogger;
 import net.sourceforge.peers.javaxsound.JavaxSoundManager;
 import net.sourceforge.peers.sip.Utils;
@@ -16,13 +17,16 @@ import net.sourceforge.peers.sip.syntaxencoding.SipHeader;
 import net.sourceforge.peers.sip.syntaxencoding.SipUriSyntaxException;
 import net.sourceforge.peers.sip.transport.SipRequest;
 import net.sourceforge.peers.sip.transport.SipResponse;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
-@Service
+@Component
+@Slf4j
 public class SipServiceImpl implements SipService, SipListener {
 
     public static final String CALLING_ACTION_STATUS = "calling"; //拨号中
@@ -34,10 +38,7 @@ public class SipServiceImpl implements SipService, SipListener {
     private UserAgent userAgent;
     private SipRequest sipRequest;
 
-
-//    private HashMap<String, UserAgent> users = new HashMap<>();
-//    private HashMap<String, SipRequest> requests = new HashMap<>();
-    private HashMap<String, String> statusMap = new HashMap<>();
+    private LinkedHashMap <String, String> statusMap = new LinkedHashMap<>();
 
     @Override
     public void clickToDial(SIPDto sipDto) throws SocketException {
@@ -46,6 +47,7 @@ public class SipServiceImpl implements SipService, SipListener {
 //        LambdaQueryWrapper<CallStatus> query = Wrappers.lambdaQuery();
 //        query.eq(CallStatus::getName, sipDto.getName());
 //        CallStatus callStatus = callStatusMapper.selectOne(query);
+        log.info("当前状态 status{}",statusMap);
         if (statusMap.containsKey(sipDto.getName()) && (statusMap.get(sipDto.getName()) != HANGUP_ACTION_STATUS ||
                 statusMap.get(sipDto.getName()) != BUSY_ACTION_STATUS)) {
             throw new DataException("该账号已被注册，请等待");
@@ -187,7 +189,7 @@ public class SipServiceImpl implements SipService, SipListener {
 
     @Override
     public void error(SipResponse sipResponse, UserAgent userAgent) throws SipUriSyntaxException {
-        statusMap.put(userAgent.getConfig().getUserPart(), BUSY_ACTION_STATUS);
+        statusMap.put(userAgent.getConfig().getUserPart(), REGISTER_ACTION_STATUS);
         try {
             userAgent.terminate(sipRequest);
             userAgent.unregister();
