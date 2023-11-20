@@ -73,7 +73,9 @@ public class ByeHandler extends DialogMethodHandler
         dialogManager.removeDialog(dialog.getId());
         logger.debug("removed dialog " + dialog.getId());
         userAgent.getMediaManager().stopSession();
-        
+        userAgent.terminate(sipRequest);
+        userAgent.unregister();
+
         SipResponse sipResponse =
             RequestManager.generateResponse(
                     sipRequest,

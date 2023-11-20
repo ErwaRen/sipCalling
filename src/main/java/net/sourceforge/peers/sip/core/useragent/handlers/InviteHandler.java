@@ -54,7 +54,7 @@ import java.util.Timer;
 public class InviteHandler extends DialogMethodHandler
         implements ServerTransactionUser, ClientTransactionUser {
 
-    public static final int TIMEOUT = 100;
+    public static final int TIMEOUT = 20;
 
     private MediaDestination mediaDestination;
     private Timer ackTimer;

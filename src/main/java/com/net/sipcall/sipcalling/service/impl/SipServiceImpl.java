@@ -48,25 +48,17 @@ public class SipServiceImpl implements SipService, SipListener {
 //        query.eq(CallStatus::getName, sipDto.getName());
 //        CallStatus callStatus = callStatusMapper.selectOne(query);
         log.info("当前状态 status{}",statusMap);
-        if (statusMap.containsKey(sipDto.getName()) && (statusMap.get(sipDto.getName()) != HANGUP_ACTION_STATUS ||
-                statusMap.get(sipDto.getName()) != BUSY_ACTION_STATUS)) {
+        if (statusMap.containsKey(sipDto.getName())) {
             throw new DataException("该账号已被注册，请等待");
         }
-
-
         String peersHome = Utils.DEFAULT_PEERS_HOME;
         CustomConfig config = new CustomConfig();
         config.setUserPart(sipDto.getName());
         config.setDomain(sipDto.getIp());
         config.setPassword(sipDto.getPass());
-
         FileLogger logger = new FileLogger(peersHome);
         JavaxSoundManager javaxSoundManager = new JavaxSoundManager(false, logger, peersHome);
         userAgent = new UserAgent(this, config, logger, javaxSoundManager);
-
-//        statusMap.put(sipDto.getName(), REGISTER_ACTION_STATUS);
-
-
         try {
             userAgent.register();
         } catch (SipUriSyntaxException e) {
@@ -79,34 +71,10 @@ public class SipServiceImpl implements SipService, SipListener {
         try {
             sipRequest = userAgent.invite(callee,
                     Utils.generateCallID(userAgent.getConfig().getLocalInetAddress()));
+
         } catch (SipUriSyntaxException e) {
             e.printStackTrace();
         }
-
-
-//        if (callRecord != null) {
-//            LambdaUpdateWrapper<CallRecord> update = Wrappers.lambdaUpdate();
-//            update.set(CallRecord::getCallTimes, callRecord.getCallTimes() + 1);
-//            update.eq(CallRecord::getUserCard, callRecord.getUserCard());
-//            callRecordMapper.update(null, update);
-//        }else {
-//            callRecord = new CallRecord();
-//            callRecord.setUserCard(userCard);
-//            callRecord.setCallTimes(1);
-//            callRecordMapper.insert(callRecord);
-//        }
-
-//        if (callStatus != null) {
-//            LambdaUpdateWrapper<CallStatus> update = Wrappers.lambdaUpdate();
-//            update.eq(CallStatus::getName, callStatus.getName());
-//            callStatus.setStatus(1);
-//            callStatusMapper.update(callStatus,update);
-//        }else {
-//            CallStatus status = new CallStatus();
-//            status.setStatus(1);
-//            status.setName(sipDto.getName());
-//            callStatusMapper.insert(status);
-//        }
         statusMap.put(sipDto.getName(), CALLING_ACTION_STATUS);
     }
 
@@ -139,20 +107,22 @@ public class SipServiceImpl implements SipService, SipListener {
 
     @Override
     public void registering(SipRequest sipRequest) {
-
+        log.info("registering+++++++++++++++++++++++");
     }
 
     @Override
     public void registerSuccessful(UserAgent userAgent, SipResponse sipResponse) {
+        log.info("registerSuccessful+++++++++++++++++++++++");
     }
 
     @Override
     public void registerFailed(UserAgent userAgent, SipResponse sipResponse) {
+        log.info("registerFailed+++++++++++++++++++++++");
     }
 
     @Override
     public void incomingCall(SipRequest sipRequest, SipResponse provResponse) {
-
+        log.info("incomingCall+++++++++++++++++++++++");
     }
 
     @Override
@@ -162,19 +132,9 @@ public class SipServiceImpl implements SipService, SipListener {
         SipHeader sipHeader = headers.get(2);
         String value = sipHeader.getValue().getValue();
         String name = value.substring(value.indexOf(":") + 1, value.indexOf("@"));
-
-        statusMap.put(userAgent.getConfig().getUserPart(), HANGUP_ACTION_STATUS);
-
-//        LambdaUpdateWrapper<CallStatus> wrapper = Wrappers.lambdaUpdate();
-//        wrapper.eq(CallStatus::getName, userAgent.getConfig().getUserPart());
-//        wrapper.set(CallStatus::getStatus, 0);
-//        callStatusMapper.update(null, wrapper);
-        try {
-            userAgent.terminate(sipRequest);
-            userAgent.unregister();
-        } catch (SipUriSyntaxException e) {
-            e.printStackTrace();
-        }
+        statusMap.remove(userAgent.getConfig().getAuthorizationUsername());
+        userAgent.terminate(sipRequest);
+        userAgent.unregister();
     }
 
     @Override
@@ -189,7 +149,9 @@ public class SipServiceImpl implements SipService, SipListener {
 
     @Override
     public void error(SipResponse sipResponse, UserAgent userAgent) throws SipUriSyntaxException {
-        statusMap.put(userAgent.getConfig().getUserPart(), REGISTER_ACTION_STATUS);
+        log.info("error+++++++++++++++++++++++");
+        statusMap.put(userAgent.getConfig().getUserPart(), HANGUP_ACTION_STATUS);
+        statusMap.remove(userAgent.getConfig().getAuthorizationUsername());
         try {
             userAgent.terminate(sipRequest);
             userAgent.unregister();
@@ -214,6 +176,7 @@ public class SipServiceImpl implements SipService, SipListener {
             throw new JudgeBusyException("busy");
         }else if (status.equals(HANGUP_ACTION_STATUS)) {
             statusMap.remove(name);
+            userAgent.terminate(sipRequest);
         }
 
         return status;
