@@ -1,9 +1,9 @@
 package com.net.sipcall.sipcalling.service.impl;
 
 
-import com.bzfar.exception.DataException;
 import com.net.sipcall.sipcalling.config.CustomConfig;
 import com.net.sipcall.sipcalling.dto.SIPDto;
+import com.net.sipcall.sipcalling.exception.BaseException;
 import com.net.sipcall.sipcalling.exception.JudgeBusyException;
 import com.net.sipcall.sipcalling.exception.UserNotInACallException;
 import com.net.sipcall.sipcalling.service.SipService;
@@ -42,37 +42,25 @@ public class SipServiceImpl implements SipService, SipListener {
 
     @Override
     public void clickToDial(SIPDto sipDto) throws SocketException {
-
-
-//        LambdaQueryWrapper<CallStatus> query = Wrappers.lambdaQuery();
-//        query.eq(CallStatus::getName, sipDto.getName());
-//        CallStatus callStatus = callStatusMapper.selectOne(query);
-        log.info("当前状态 status{}",statusMap);
-        if (statusMap.containsKey(sipDto.getName())) {
-            throw new DataException("该账号已被注册，请等待");
-        }
-        String peersHome = Utils.DEFAULT_PEERS_HOME;
-        CustomConfig config = new CustomConfig();
-        config.setUserPart(sipDto.getName());
-        config.setDomain(sipDto.getIp());
-        config.setPassword(sipDto.getPass());
-        FileLogger logger = new FileLogger(peersHome);
-        JavaxSoundManager javaxSoundManager = new JavaxSoundManager(false, logger, peersHome);
-        userAgent = new UserAgent(this, config, logger, javaxSoundManager);
         try {
+            log.info("当前状态 status{}",statusMap);
+            if (statusMap.containsKey(sipDto.getName())) {
+                throw new BaseException("该账号已被注册，请等待");
+            }
+            String peersHome = Utils.DEFAULT_PEERS_HOME;
+            CustomConfig config = new CustomConfig();
+            config.setUserPart(sipDto.getName());
+            config.setDomain(sipDto.getIp());
+            config.setPassword(sipDto.getPass());
+            FileLogger logger = new FileLogger(peersHome);
+            JavaxSoundManager javaxSoundManager = new JavaxSoundManager(false, logger, peersHome);
+            userAgent = new UserAgent(this, config, logger, javaxSoundManager);
             userAgent.register();
+            String callee = "sip:" + sipDto.getNumber() + "@" + sipDto.getIp();
+            sipRequest = userAgent.invite(callee, Utils.generateCallID(userAgent.getConfig().getLocalInetAddress()));
         } catch (SipUriSyntaxException e) {
-//            e.printStackTrace();
-        throw new DataException("注册失败，请稍后再试");
-        }
-
-        String callee = "sip:" + sipDto.getNumber() + "@" + sipDto.getIp();
-
-        try {
-            sipRequest = userAgent.invite(callee,
-                    Utils.generateCallID(userAgent.getConfig().getLocalInetAddress()));
-
-        } catch (SipUriSyntaxException e) {
+            throw new BaseException("注册失败，请稍后再试");
+        } catch (Exception e) {
             e.printStackTrace();
         }
         statusMap.put(sipDto.getName(), CALLING_ACTION_STATUS);
@@ -161,6 +149,7 @@ public class SipServiceImpl implements SipService, SipListener {
 
     }
 
+    @Override
     public String getStatus(String name) {
 
         if (statusMap.containsKey(name)) {

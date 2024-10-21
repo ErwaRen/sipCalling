@@ -43,9 +43,6 @@ public class CancelHandler extends DialogMethodHandler
                 logger);
     }
 
-    //////////////////////////////////////////////////////////
-    // UAS methods
-    //////////////////////////////////////////////////////////
 
     public void handleCancel(SipRequest sipRequest) throws SipUriSyntaxException {
         SipHeaderFieldValue topVia = Utils.getTopVia(sipRequest);

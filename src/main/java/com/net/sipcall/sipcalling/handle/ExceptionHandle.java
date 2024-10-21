@@ -1,6 +1,5 @@
 package com.net.sipcall.sipcalling.handle;
 
-import com.bzfar.exception.DataException;
 import com.net.sipcall.sipcalling.exception.AccountRegisteredException;
 import com.net.sipcall.sipcalling.exception.JudgeBusyException;
 import com.net.sipcall.sipcalling.exception.UserNotInACallException;
@@ -43,15 +42,7 @@ public class ExceptionHandle {
         }
     }
 
-    @ExceptionHandler(value = DataException.class)
-    @ResponseBody
-    public HttpResult DataException(DataException e){
-        if (ObjectUtils.isEmpty(e.getCode())) {
-            return HttpResult.error(e.getMessage());
-        } else {
-            return HttpResult.error(e.getCode(), e.getMessage());
-        }
-    }
+
 
 
 }
