@@ -137,7 +137,7 @@ public final class RFC3261 {
     public static final int    TRANSPORT_UDP_MAX_SIZE       = 65535;
     public static final char   TRANSPORT_VIA_SEP            = '/';
     public static final char   TRANSPORT_VIA_SEP2           = ' ';
-    public static final int    TRANSPORT_DEFAULT_PORT       = 5443;
+    public static final int    TRANSPORT_DEFAULT_PORT       = 5060;
     public static final int    TRANSPORT_TLS_PORT           = 5061;
     public static final char   TRANSPORT_PORT_SEP           = ':';
     
