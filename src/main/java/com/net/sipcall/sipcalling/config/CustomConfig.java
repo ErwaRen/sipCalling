@@ -29,8 +29,8 @@ public class CustomConfig implements Config {
 
 //            inetAddress = InetAddress.getByName("192.168.110.109");
 
-            // inetAddress = getLocalHost();
-            inetAddress = InetAddress.getByName("125.73.4.155");
+            inetAddress = getLocalHost();
+            // inetAddress = InetAddress.getByName("125.73.4.155");
         } catch (UnknownHostException e) {
             e.printStackTrace();
             return null;

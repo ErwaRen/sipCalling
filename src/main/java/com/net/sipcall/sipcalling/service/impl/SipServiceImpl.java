@@ -41,7 +41,7 @@ public class SipServiceImpl implements SipService, SipListener {
     private LinkedHashMap <String, String> statusMap = new LinkedHashMap<>();
 
     @Override
-    public void clickToDial(SIPDto sipDto) throws SocketException {
+    public void clickToDial(SIPDto sipDto) {
         try {
             log.info("当前状态 status{}",statusMap);
             if (statusMap.containsKey(sipDto.getName())) {
