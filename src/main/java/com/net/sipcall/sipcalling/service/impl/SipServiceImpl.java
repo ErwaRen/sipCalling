@@ -42,10 +42,11 @@ public class SipServiceImpl implements SipService, SipListener {
 
     @Override
     public void clickToDial(SIPDto sipDto) {
+        log.info("clickToDial+++++++++++++++++++++++");
         try {
             log.info("当前状态 status{}",statusMap);
             if (statusMap.containsKey(sipDto.getName())) {
-                throw new BaseException("该账号已被注册，请等待");
+                // throw new BaseException("该账号已被注册，请等待");
             }
             String peersHome = Utils.DEFAULT_PEERS_HOME;
             CustomConfig config = new CustomConfig();
@@ -55,12 +56,16 @@ public class SipServiceImpl implements SipService, SipListener {
             FileLogger logger = new FileLogger(peersHome);
             JavaxSoundManager javaxSoundManager = new JavaxSoundManager(false, logger, peersHome);
             userAgent = new UserAgent(this, config, logger, javaxSoundManager);
-            userAgent.register();
+            // userAgent.register(); // 不需要注册
             String callee = "sip:" + sipDto.getNumber() + "@" + sipDto.getIp();
+            log.info("clickToDial+++++++++++++++++++++++ callee : {} ", callee);
             sipRequest = userAgent.invite(callee, Utils.generateCallID(userAgent.getConfig().getLocalInetAddress()));
+            log.info("clickToDial+++++++++++++++++++++++ invite : success ");
         } catch (SipUriSyntaxException e) {
+            log.error("clickToDial+++++++++++++++++++++++ 注册失败，请稍后再试  {}", e.getMessage(), e);
             throw new BaseException("注册失败，请稍后再试");
         } catch (Exception e) {
+            log.error("clickToDial+++++++++++++++++++++++ {}", e.getMessage(), e);
             e.printStackTrace();
         }
         statusMap.put(sipDto.getName(), CALLING_ACTION_STATUS);
@@ -68,7 +73,7 @@ public class SipServiceImpl implements SipService, SipListener {
 
     @Override
     public void hangUp(String name) throws SipUriSyntaxException {
-
+        log.info("hangUp+++++++++++++++++++++++");
 
 //        LambdaQueryWrapper<CallStatus> query = Wrappers.lambdaQuery();
 //        query.eq(CallStatus::getName, name);
@@ -115,6 +120,7 @@ public class SipServiceImpl implements SipService, SipListener {
 
     @Override
     public void remoteHangup(SipRequest sipRequest) throws SipUriSyntaxException {
+        log.info("remoteHangup+++++++++++++++++++++++");
         //获取用户name
         ArrayList<SipHeader> headers = sipRequest.getSipHeaders().getHeaders();
         SipHeader sipHeader = headers.get(2);
@@ -127,11 +133,13 @@ public class SipServiceImpl implements SipService, SipListener {
 
     @Override
     public void ringing(SipResponse sipResponse, UserAgent userAgent) {
+        log.info("ringing+++++++++++++++++++++++");
         statusMap.put(userAgent.getConfig().getUserPart(), CALLING_ACTION_STATUS);
     }
 
     @Override
     public void calleePickup(SipResponse sipResponse, UserAgent userAgent) {
+        log.info("calleePickup+++++++++++++++++++++++");
         statusMap.put(userAgent.getConfig().getUserPart(), PICKUP_ACTION_STATUS);
     }
 
@@ -151,7 +159,7 @@ public class SipServiceImpl implements SipService, SipListener {
 
     @Override
     public String getStatus(String name) {
-
+        log.info("getStatus+++++++++++++++++++++++");
         if (statusMap.containsKey(name)) {
 
         }else {
