@@ -22,21 +22,21 @@ public class SipController {
     @ApiOperation("拨打电话")
     public HttpResult<Void> clickToDial(@RequestBody SIPDto sipDto) throws SocketException, SipUriSyntaxException {
         sipService.clickToDial(sipDto);
-        return new HttpResult<>().ok();
+        return HttpResult.ok();
     }
 
     @GetMapping("/hangUp")
     @ApiOperation("挂断电话")
     public HttpResult<Void> hangUp(String name) throws SocketException, SipUriSyntaxException {
         sipService.hangUp(name);
-        return new HttpResult<>().ok();
+        return HttpResult.ok();
     }
 
     @GetMapping("/get_status")
     @ApiOperation("查询状态")
     public HttpResult<String> getStatus(String name) {
         String status = sipService.getStatus(name);
-        return new HttpResult<>().ok(status);
+        return HttpResult.ok(status);
     }
 
 }
